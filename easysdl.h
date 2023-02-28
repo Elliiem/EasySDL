@@ -73,6 +73,12 @@ struct ESDL_Tri
         p1 = ESDL_Point(x1,y1);
         p2 = ESDL_Point(x2,y2);
     }
+    ESDL_Tri(ESDL_Point P0,ESDL_Point P1,ESDL_Point P2)
+    {
+        p0 = P0;
+        p1 = P1;
+        p2 = P2;
+    }
 };
 
 struct ESDL_PTri
@@ -94,17 +100,19 @@ struct ESDL_Poly
     public:
     std::vector<ESDL_PTri> tris;
     std::vector<ESDL_Point> points;
+    ESDL_Point center;
 
-    ESDL_Poly(std::vector<ESDL_Point> Points)
+    ESDL_Poly(std::vector<ESDL_Point> Points, ESDL_Point Center)
     {
+        center = Center;
         points = Points;
-        tris = SplitPoly(&points);
+        SplitPoly();
     }
 
     public:
-    std::vector<ESDL_PTri> SplitPoly(std::vector<ESDL_Point> *points);
+    int SplitPoly();
     bool InsideTriangle(ESDL_Point A,ESDL_Point B,ESDL_Point C,ESDL_Point P);
-    bool IsSmallDeg(ESDL_Point P, ESDL_Point A, ESDL_Point B);
+    bool IsSmallDeg(ESDL_Point P, ESDL_Point A, ESDL_Point B, ESDL_Point C);
 };
 
 extern ESDL_Color red;
