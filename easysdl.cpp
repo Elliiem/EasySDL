@@ -4,7 +4,6 @@
 #include <fmt/format.h>
 #include <unistd.h>
 #include <iostream>
-//#include <math.h>
 
 ESDL_Color red(255,0,0,255);
 ESDL_Color green(0,255,0,255);
@@ -197,6 +196,14 @@ int ESDL_DrawTriF(ESDL_Window win,ESDL_Tri tri,ESDL_Color color)
     return 0;
 }
 
+int ESDL_DrawPolyF(ESDL_Window win,ESDL_Poly poly,ESDL_Color color, int x, int y)
+{
+    for(int i = 0;i<poly.tris.size();i++)
+    {
+        ESDL_DrawTriF(win,ESDL_Tri(poly.points.at(poly.tris.at(i).p0)+ESDL_Point(x,y),poly.points.at(poly.tris.at(i).p1)+ESDL_Point(x,y),poly.points.at(poly.tris.at(i).p2)+ESDL_Point(x,y)),white);
+    }
+    return 0;
+}
 
 int ESDL_Poly::SplitPoly()
 {

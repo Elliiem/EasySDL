@@ -148,5 +148,6 @@ int ESDL_DrawLine(ESDL_Window win,int x0,int y0,int x1,int y1,ESDL_Color color);
 int ESDL_DrawPoint(ESDL_Window win,int x,int y,ESDL_Color color);
 int ESDL_DrawRect(ESDL_Window win,int x0,int y0,int x1,int y1,ESDL_Color color);
 int ESDL_DrawTriF(ESDL_Window win,ESDL_Tri tri,ESDL_Color color);
+int ESDL_DrawPolyF(ESDL_Window win, ESDL_Poly poly, ESDL_Color color, int x, int y);
 
 #endif // EASYSDL_H
