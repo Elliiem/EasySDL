@@ -98,7 +98,7 @@ int Sort_Tri(ESDL_Tri* tri)
     {
         if(tri->p1.y > tri->p2.y)
         {
-            ESDL_KPoint temp;
+            ESDL_Point temp;
             temp = tri->p1;
             tri->p1 = tri->p2;
             tri->p2 = temp;
@@ -106,13 +106,13 @@ int Sort_Tri(ESDL_Tri* tri)
     }
     else
     {
-        ESDL_KPoint temp;
+        ESDL_Point temp;
         temp = tri->p0;
         tri->p0 = tri->p1;
         tri->p1 = temp;
         if(tri->p1.y > tri->p2.y)
         {
-            ESDL_KPoint temp;
+            ESDL_Point temp;
             temp = tri->p1;
             tri->p1 = tri->p2;
             tri->p2 = temp;
@@ -195,4 +195,9 @@ int ESDL_DrawTriF(ESDL_Window win,ESDL_Tri tri,ESDL_Color color)
     }
 
     return 0;
+}
+
+std::vector<ESDL_PTri> ESDL_Poly::SplitPoly(std::vector<ESDL_Point> points)
+{
+
 }
