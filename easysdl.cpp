@@ -4,6 +4,7 @@
 #include <fmt/format.h>
 #include <unistd.h>
 #include <iostream>
+//#include <math.h>
 
 ESDL_Color red(255,0,0,255);
 ESDL_Color green(0,255,0,255);
@@ -134,7 +135,6 @@ int Sort_Tri(ESDL_Tri* tri)
     return 0;
 }
 
-
 int ESDL_DrawLine(ESDL_Window win,int x0,int y0,int x1,int y1,ESDL_Color color)
 {
     SDL_SetRenderDrawColor(win.rend,color.r,color.g,color.b,color.a);
@@ -197,7 +197,92 @@ int ESDL_DrawTriF(ESDL_Window win,ESDL_Tri tri,ESDL_Color color)
     return 0;
 }
 
-std::vector<ESDL_PTri> ESDL_Poly::SplitPoly(std::vector<ESDL_Point> points)
-{
 
+std::vector<ESDL_PTri> ESDL_Poly::SplitPoly(std::vector<ESDL_Point>* points)
+{
+    Uint8 size = points->size();
+
+    std::vector<int> indexes;
+    std::vector<ESDL_PTri> tris;
+    for(int i = 0;i<size;i++)
+    {
+        indexes.push_back(i);
+    }
+    Uint8 index = 0;
+    Sint8 index_a,index_b;
+
+    bool intersecting = 0;
+
+    while(indexes.size() > 3)
+    {
+        index_a = index + 1;
+        index_b = index - 1;
+        if(index_a >= indexes.size())
+        {
+            index_a = 0;
+        }
+        if(index_b < 0)
+        {
+            index_b = indexes.size()-1;
+        }
+        if(IsSmallDeg(points->at(indexes.at(index)),points->at(indexes.at(index_a)),points->at(indexes.at(index_b))))
+        {
+            for(int i = 0;i<indexes.size();i++)
+            {
+                if(InsideTriangle(points->at(indexes.at(index)),points->at(indexes.at(index_a)),points->at(indexes.at(index_b)),points->at(indexes.at(i))))
+                {
+                    intersecting = 1;
+                    break;
+                }
+
+            }
+
+        }
+
+        if(!intersecting)
+        {
+            tris.push_back(ESDL_PTri(index_b,index,index_a));
+            fmt::print("{}\n",*(indexes.begin()+index));
+            indexes.erase(indexes.begin()+index);
+            index = 0;
+        }
+        index++;
+    }
+    tris.push_back(ESDL_PTri(indexes.at(2),indexes.at(0),indexes.at(1)));
+    return tris;
+}
+
+bool ESDL_Poly::InsideTriangle(ESDL_Point A,ESDL_Point B,ESDL_Point C,ESDL_Point P)
+{
+  float ax, ay, bx, by, cx, cy, apx, apy, bpx, bpy, cpx, cpy;
+  float cCROSSap, bCROSScp, aCROSSbp;
+
+  ax = C.x - B.x;  ay = C.y - B.y;
+  bx = A.x - C.x;  by = A.y - C.y;
+  cx = B.x - A.x;  cy = B.y - A.y;
+  apx= P.x - A.x;  apy= P.y - A.y;
+  bpx= P.x - B.x;  bpy= P.y - B.y;
+  cpx= P.x - C.x;  cpy= P.y - C.y;
+
+  aCROSSbp = ax*bpy - ay*bpx;
+  cCROSSap = cx*apy - cy*apx;
+  bCROSScp = bx*cpy - by*cpx;
+
+  return ((aCROSSbp >= 0.0f) && (bCROSScp >= 0.0f) && (cCROSSap >= 0));
+}
+
+bool ESDL_Poly::IsSmallDeg(ESDL_Point P, ESDL_Point A, ESDL_Point B)
+{
+    int ad,bd,pd;
+
+    ad = sqrt(pow(A.x,2)+pow(A.y,2));
+    bd = sqrt(pow(B.x,2)+pow(B.y,2));
+    pd = sqrt(pow(P.x,2)+pow(P.y,2));
+
+    if(pd > ad | pd > bd)
+    {
+        return true;
+    }
+
+    return false;
 }

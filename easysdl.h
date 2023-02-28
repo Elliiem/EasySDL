@@ -2,11 +2,11 @@
 #define EASYSDL_H
 
 #include <SDL2/SDL.h>
-#include <map>
 #include <unistd.h>
 #include <string>
 #include <vector>
-
+#include <map>
+#include <fmt/format.h>
 
 struct ESDL_Color
 {
@@ -38,6 +38,16 @@ struct ESDL_Point
     {
 
     }
+
+    ESDL_Point operator+(ESDL_Point other)
+    {
+        return ESDL_Point(x+other.x,y+other.y);
+    }
+
+    ESDL_Point operator-(ESDL_Point other)
+    {
+        return ESDL_Point(x-other.x,y-other.y);
+    }
 };
 
 struct ESDL_Polar_Point
@@ -67,11 +77,11 @@ struct ESDL_Tri
 
 struct ESDL_PTri
 {
-    ESDL_Point* p0;
-    ESDL_Point* p1;
-    ESDL_Point* p2;
+    Uint8 p0;
+    Uint8 p1;
+    Uint8 p2;
 
-    ESDL_PTri(ESDL_Point* P0,ESDL_Point* P1,ESDL_Point* P2)
+    ESDL_PTri(Uint8 P0,Uint8 P1,Uint8 P2)
     {
         p0 = P0;
         p1 = P1;
@@ -81,16 +91,20 @@ struct ESDL_PTri
 
 struct ESDL_Poly
 {
+    public:
     std::vector<ESDL_PTri> tris;
     std::vector<ESDL_Point> points;
 
     ESDL_Poly(std::vector<ESDL_Point> Points)
     {
         points = Points;
-        tris = SplitPoly(Points);
+        tris = SplitPoly(&points);
     }
 
-    std::vector<ESDL_PTri> SplitPoly(std::vector<ESDL_Point> points);
+    public:
+    std::vector<ESDL_PTri> SplitPoly(std::vector<ESDL_Point> *points);
+    bool InsideTriangle(ESDL_Point A,ESDL_Point B,ESDL_Point C,ESDL_Point P);
+    bool IsSmallDeg(ESDL_Point P, ESDL_Point A, ESDL_Point B);
 };
 
 extern ESDL_Color red;
