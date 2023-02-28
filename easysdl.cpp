@@ -11,6 +11,7 @@ ESDL_Color blue(0,0,255,255);
 ESDL_Color white(255,255,255,255);
 ESDL_Color black(0,0,0,255);
 
+
 ESDL_Window::ESDL_Window(int width,int height,char* name,int SDL_renderer_flags,SDL_BlendMode SDL_blend_flag)
 {
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -57,13 +58,24 @@ int ESDL_Window::HandleSDLEvents()
     last_keyboard = keyboard;
     while (SDL_PollEvent(&event))
     {
-        if(event.type == SDL_KEYDOWN | event.type == SDL_KEYUP)
+        switch(event.type)
         {
-            GetKeys();
-        }
-        if(event.type == SDL_QUIT)
-        {
-            quit = true;
+            case(SDL_KEYDOWN):
+                GetKeys();
+            break;
+
+            case(SDL_KEYUP):
+                GetKeys();
+            break;
+
+            case(SDL_QUIT):
+                quit = true;
+            break;
+
+            case(SDL_MOUSEMOTION):
+                mouse_pos.x = event.motion.x;
+                mouse_pos.y = event.motion.y;
+            break;
         }
     }
     return 0;
@@ -200,10 +212,11 @@ int ESDL_DrawPolyF(ESDL_Window win,ESDL_Poly poly,ESDL_Color color, int x, int y
 {
     for(int i = 0;i<poly.tris.size();i++)
     {
-        ESDL_DrawTriF(win,ESDL_Tri(poly.points.at(poly.tris.at(i).p0)+ESDL_Point(x,y),poly.points.at(poly.tris.at(i).p1)+ESDL_Point(x,y),poly.points.at(poly.tris.at(i).p2)+ESDL_Point(x,y)),white);
+        ESDL_DrawTriF(win,ESDL_Tri(poly.points.at(poly.tris.at(i).p0)+ESDL_Point(x,y),poly.points.at(poly.tris.at(i).p1)+ESDL_Point(x,y),poly.points.at(poly.tris.at(i).p2)+ESDL_Point(x,y)),color);
     }
     return 0;
 }
+
 
 int ESDL_Poly::SplitPoly()
 {
@@ -227,7 +240,7 @@ int ESDL_Poly::SplitPoly()
         if(index_b < 0)
             index_b = indexes.size()-1;
 
-        if(IsSmallDeg(points.at(indexes.at(index)),points.at(indexes.at(index_a)),points.at(indexes.at(index_b)),center))
+        if(IsSmallDeg(points.at(indexes.at(index)),points.at(indexes.at(index_a)),points.at(indexes.at(index_b))))
         {
             for(int i = 0;i<indexes_size;i++)
                 if(InsideTriangle(points.at(indexes.at(index)),points.at(indexes.at(index_a)),points.at(indexes.at(index_b)),points.at(indexes.at(i))))
@@ -270,17 +283,13 @@ bool ESDL_Poly::InsideTriangle(ESDL_Point A,ESDL_Point B,ESDL_Point C,ESDL_Point
   return ((aCROSSbp > 0.0f) && (bCROSScp > 0.0f) && (cCROSSap > 0));
 }
 
-bool ESDL_Poly::IsSmallDeg(ESDL_Point P, ESDL_Point A, ESDL_Point B,ESDL_Point C)
+bool ESDL_Poly::IsSmallDeg(ESDL_Point P, ESDL_Point A, ESDL_Point B)
 {
     int ad,bd,pd;
 
-    ESDL_Point av = C-A;
-    ESDL_Point bv = C-B;
-    ESDL_Point pv = C-P;
-
-    ad = sqrt(pow(av.x,2)+pow(av.y,2));
-    bd = sqrt(pow(bv.x,2)+pow(bv.y,2));
-    pd = sqrt(pow(pv.x,2)+pow(pv.y,2));
+    ad = sqrt(pow(A.x,2)+pow(A.y,2));
+    bd = sqrt(pow(B.x,2)+pow(B.y,2));
+    pd = sqrt(pow(P.x,2)+pow(P.y,2));
 
     if(pd > ad | pd > bd)
     {

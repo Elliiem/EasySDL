@@ -100,19 +100,17 @@ struct ESDL_Poly
     public:
     std::vector<ESDL_PTri> tris;
     std::vector<ESDL_Point> points;
-    ESDL_Point center;
 
-    ESDL_Poly(std::vector<ESDL_Point> Points, ESDL_Point Center)
+    ESDL_Poly(std::vector<ESDL_Point> Points)
     {
-        center = Center;
         points = Points;
         SplitPoly();
     }
 
-    public:
+    private:
     int SplitPoly();
     bool InsideTriangle(ESDL_Point A,ESDL_Point B,ESDL_Point C,ESDL_Point P);
-    bool IsSmallDeg(ESDL_Point P, ESDL_Point A, ESDL_Point B, ESDL_Point C);
+    bool IsSmallDeg(ESDL_Point P, ESDL_Point A, ESDL_Point B);
 };
 
 extern ESDL_Color red;
@@ -131,6 +129,7 @@ class ESDL_Window
 
         std::map<int, bool> keyboard;
         std::map<int, bool> last_keyboard;
+        ESDL_Point mouse_pos;
 
         bool quit = false;
 
