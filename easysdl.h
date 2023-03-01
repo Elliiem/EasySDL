@@ -54,10 +54,15 @@ struct ESDL_Polar_Point
 {
     int deg;
     int r;
-    ESDL_Polar_Point(int Deg,int R)
+    ESDL_Polar_Point(int R,int Deg)
     {
         deg = Deg;
         r = R;
+    }
+
+    ESDL_Polar_Point()
+    {
+
     }
 };
 
@@ -81,13 +86,13 @@ struct ESDL_Tri
     }
 };
 
-struct ESDL_PTri
+struct ESDL_Index_Tri
 {
     Uint8 p0;
     Uint8 p1;
     Uint8 p2;
 
-    ESDL_PTri(Uint8 P0,Uint8 P1,Uint8 P2)
+    ESDL_Index_Tri(Uint8 P0,Uint8 P1,Uint8 P2)
     {
         p0 = P0;
         p1 = P1;
@@ -98,17 +103,29 @@ struct ESDL_PTri
 struct ESDL_Poly
 {
     public:
-    std::vector<ESDL_PTri> tris;
+    std::vector<ESDL_Index_Tri> tris;
     std::vector<ESDL_Point> points;
+    std::vector<ESDL_Polar_Point> polar;
+    float rot = 0;
 
     ESDL_Poly(std::vector<ESDL_Point> Points)
     {
         points = Points;
+        for(int i = 0;i<points.size();i++)
+        {
+            points.at(i).y = -points.at(i).y;
+        }
         SplitPoly();
+        FillPolar();
     }
+
+    int ResetTris();
+    int ResetPolar();
+    int Rotate(float deg);
 
     private:
     int SplitPoly();
+    int FillPolar();
     bool InsideTriangle(ESDL_Point A,ESDL_Point B,ESDL_Point C,ESDL_Point P);
     bool IsSmallDeg(ESDL_Point P, ESDL_Point A, ESDL_Point B);
 };
@@ -118,6 +135,7 @@ extern ESDL_Color green;
 extern ESDL_Color blue;
 extern ESDL_Color white;
 extern ESDL_Color black;
+extern ESDL_Color gray;
 
 class ESDL_Window
 {
@@ -133,7 +151,7 @@ class ESDL_Window
 
         bool quit = false;
 
-        ESDL_Window(int width,int height,char* name,int SDL_renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC,SDL_BlendMode SDL_blend_flag = SDL_BLENDMODE_BLEND);
+        ESDL_Window(int width,int height,std::string name,int SDL_renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC,SDL_BlendMode SDL_blend_flag = SDL_BLENDMODE_BLEND);
 
         int Update();
 
@@ -143,10 +161,13 @@ class ESDL_Window
         int HandleKeys();
 };
 
-int ESDL_DrawLine(ESDL_Window win,int x0,int y0,int x1,int y1,ESDL_Color color);
-int ESDL_DrawPoint(ESDL_Window win,int x,int y,ESDL_Color color);
-int ESDL_DrawRect(ESDL_Window win,int x0,int y0,int x1,int y1,ESDL_Color color);
-int ESDL_DrawTriF(ESDL_Window win,ESDL_Tri tri,ESDL_Color color);
-int ESDL_DrawPolyF(ESDL_Window win, ESDL_Poly poly, ESDL_Color color, int x, int y);
+int ESDL_DrawLine(ESDL_Window* win,int x0,int y0,int x1,int y1,ESDL_Color color);
+int ESDL_DrawPoint(ESDL_Window* win,int x,int y,ESDL_Color color);
+int ESDL_DrawRectF(ESDL_Window* win,int x0,int y0,int x1,int y1,ESDL_Color color);
+int ESDL_DrawRect(ESDL_Window* win,int x0,int y0,int x1,int y1,ESDL_Color color);
+int ESDL_DrawTriF(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color);
+int ESDL_DrawTri(ESDL_Window* win, ESDL_Tri tri, int x, int y, ESDL_Color color);
+int ESDL_DrawPolyF(ESDL_Window* win, ESDL_Poly *poly, int x, int y, ESDL_Color color);
+int ESDL_DrawPoly(ESDL_Window* win,ESDL_Poly poly,int x, int y,ESDL_Color color);
 
 #endif // EASYSDL_H

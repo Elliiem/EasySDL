@@ -10,13 +10,14 @@ ESDL_Color green(0,255,0,255);
 ESDL_Color blue(0,0,255,255);
 ESDL_Color white(255,255,255,255);
 ESDL_Color black(0,0,0,255);
+ESDL_Color gray(125,125,125,255);
 
 
-ESDL_Window::ESDL_Window(int width,int height,char* name,int SDL_renderer_flags,SDL_BlendMode SDL_blend_flag)
+ESDL_Window::ESDL_Window(int width,int height,std::string name,int SDL_renderer_flags,SDL_BlendMode SDL_blend_flag)
 {
     SDL_Init(SDL_INIT_EVERYTHING);
 
-    win = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0);
+    win = SDL_CreateWindow(name.data(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0);
     rend = SDL_CreateRenderer(win, -1, SDL_renderer_flags);
     surf = SDL_GetWindowSurface(win);
 
@@ -91,7 +92,7 @@ int ESDL_Window::HandleKeys()
     return 0;
 }
 
-int  ESDL_Window::Update()
+int ESDL_Window::Update()
 {
     HandleSDLEvents();
     HandleKeys();
@@ -146,74 +147,203 @@ int Sort_Tri(ESDL_Tri* tri)
     return 0;
 }
 
-int ESDL_DrawLine(ESDL_Window win,int x0,int y0,int x1,int y1,ESDL_Color color)
+ESDL_Point ToKartesian(float len,float deg,float rot)
 {
-    SDL_SetRenderDrawColor(win.rend,color.r,color.g,color.b,color.a);
-    SDL_RenderDrawLine(win.rend,x0,y0,x1,y1);
+    deg += rot;
+    if(deg>=360)
+    {
+        deg -= 360;
+    }
+    else if(rot<0)
+    {
+        deg += 360;
+    }
+
+    int x,y;
+
+    if(deg <= 180)
+    {
+        if(deg<=90)
+        {
+            x = round(cos((deg)*0.017453292519943295)*len);
+            y = -round(sin((deg)*0.017453292519943295)*len);
+        }
+        else
+        {
+            x = -round(sin((deg-90)*0.017453292519943295)*len);
+            y = -round(cos((deg-90)*0.017453292519943295)*len);
+        }
+    }
+    else
+    {
+        if(deg<=270)
+        {
+            x = -round(cos((deg-180)*0.017453292519943295)*len);
+            y = round(sin((deg-180)*0.017453292519943295)*len);
+        }
+        else
+        {
+            x = round(sin((deg-270)*0.017453292519943295)*len);
+            y = round(cos((deg-270)*0.017453292519943295)*len);
+        }
+    }
+    return ESDL_Point(x,y);
+}
+
+ESDL_Polar_Point ToPolar(float x,float y)
+{
+    int add=0;
+
+    if(x==0 & y==0)
+    {
+        return ESDL_Polar_Point(0,0);
+    }
+    else if (x == 0)
+    {
+        if(y<0)
+        {
+            return ESDL_Polar_Point(fabs(y),270);
+        }
+        else if (y > 0)
+        {
+            return ESDL_Polar_Point(fabs(y),90);
+        }
+    }
+    else if(y == 0)
+    {
+        if(x<0)
+        {
+            return ESDL_Polar_Point(fabs(x),180);
+        }
+        else if (x>0)
+        {
+            return ESDL_Polar_Point(fabs(x),0);
+        }
+    }
+
+    if(x < 0 & y > 0)
+    {
+        x = fabs(x);
+        y = fabs(y);
+        return ESDL_Polar_Point(sqrt(powf(x,2)+powf(y,2)),fabs(180-(atan((y/x))*57.29577951308232)));
+    }
+    else if (x < 0 & y < 0)
+    {
+        x = fabs(x);
+        y = fabs(y);
+        return ESDL_Polar_Point(sqrt(powf(x,2)+powf(y,2)),(atan((y/x))*57.29577951308232)+180);
+    }
+    else if (x > 0 & y < 0)
+    {
+        x = fabs(x);
+        y = fabs(y);
+        return ESDL_Polar_Point(sqrt(powf(x,2)+powf(y,2)),(atan((y/x))*57.29577951308232)+270);
+    }
+    return ESDL_Polar_Point(sqrt(powf(x,2)+powf(y,2)),(atan((y/x))*57.29577951308232));
+}
+
+
+int ESDL_DrawLine(ESDL_Window* win,int x0,int y0,int x1,int y1,ESDL_Color color)
+{
+    SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
+    SDL_RenderDrawLine(win->rend,x0,y0,x1,y1);
     return 0;
 }
 
-int ESDL_DrawPoint(ESDL_Window win,int x,int y,ESDL_Color color)
+int ESDL_DrawPoint(ESDL_Window* win,int x,int y,ESDL_Color color)
 {
-    SDL_SetRenderDrawColor(win.rend,color.r,color.g,color.b,color.a);
-    SDL_RenderDrawPoint(win.rend,x,y);
+    SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
+    SDL_RenderDrawPoint(win->rend,x,y);
     return 0;
 }
 
-int ESDL_DrawRect(ESDL_Window win,int x0,int y0,int x1,int y1,ESDL_Color color)
+int ESDL_DrawRectF(ESDL_Window* win,int x0,int y0,int x1,int y1,ESDL_Color color)
 {
-    SDL_SetRenderDrawColor(win.rend,color.r,color.g,color.b,color.a);
+    int height = y1-y0;
+    for(int i = 0;i<=height;i++)
+    {
+        SDL_RenderDrawLine(win->rend,x0,y0+i,x1,y0+i);
+    }
+    return 0;
+}
+
+int ESDL_DrawRect(ESDL_Window* win,int x0,int y0,int x1,int y1,ESDL_Color color)
+{
+    SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
     SDL_Rect rect;
     rect.x = x0;
     rect.y = y0;
     rect.w = x1-x0;
     rect.h = y1-y0;
-    SDL_RenderDrawRect(win.rend,&rect);
+    SDL_RenderDrawRect(win->rend,&rect);
     return 0;
 }
 
-int ESDL_DrawTriF(ESDL_Window win,ESDL_Tri tri,ESDL_Color color)
+int ESDL_DrawTriF(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color)
 {
     Sort_Tri(&tri);
-    SDL_SetRenderDrawColor(win.rend,color.r,color.g,color.b,color.a);
+    SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
 
     float delta_a,delta_b;
     float line_a = 0;
     float line_b = 0;
-    int y = 0;
+    int Y = 0;
 
     delta_a = (float)(tri.p1.x-tri.p0.x)/(float)(tri.p1.y-tri.p0.y);
     delta_b = (float)(tri.p2.x-tri.p0.x)/(float)(tri.p2.y-tri.p0.y);
 
-    while(y != tri.p1.y-tri.p0.y)
+    while(Y != tri.p1.y-tri.p0.y)
     {
         line_a += delta_a;
         line_b += delta_b;
-        SDL_RenderDrawLine(win.rend,tri.p0.x+line_a,tri.p0.y+y,tri.p0.x+line_b,tri.p0.y+y);
-        y++;
+        SDL_RenderDrawLine(win->rend,x+tri.p0.x+line_a,y+tri.p0.y+Y,x+tri.p0.x+line_b,y+tri.p0.y+Y);
+        Y++;
     }
 
     delta_a = (float)(tri.p2.x-tri.p1.x)/(float)(tri.p2.y-tri.p1.y);
 
     line_a = tri.p1.x - tri.p0.x;
 
-    while (y != tri.p2.y-tri.p0.y)
+    while (Y != tri.p2.y-tri.p0.y)
     {
         line_a += delta_a;
         line_b += delta_b;
-        SDL_RenderDrawLine(win.rend,tri.p0.x+line_a,tri.p0.y+y,tri.p0.x+line_b,tri.p0.y+y);
-        y++;
+        SDL_RenderDrawLine(win->rend,x+tri.p0.x+line_a,y+tri.p0.y+Y,x+tri.p0.x+line_b,y+tri.p0.y+Y);
+        Y++;
     }
 
     return 0;
 }
 
-int ESDL_DrawPolyF(ESDL_Window win,ESDL_Poly poly,ESDL_Color color, int x, int y)
+int ESDL_DrawTri(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color)
 {
-    for(int i = 0;i<poly.tris.size();i++)
+    SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
+    SDL_RenderDrawLine(win->rend,x+tri.p0.x,y+tri.p0.y,x+tri.p1.x,y+tri.p1.y);
+    SDL_RenderDrawLine(win->rend,x+tri.p1.x,y+tri.p1.y,x+tri.p2.x,y+tri.p2.y);
+    SDL_RenderDrawLine(win->rend,x+tri.p2.x,y+tri.p2.y,x+tri.p0.x,y+tri.p0.y);
+    return 0;
+}
+
+int ESDL_DrawPolyF(ESDL_Window* win,ESDL_Poly* poly,int x,int y,ESDL_Color color)
+{
+    std::vector<ESDL_Index_Tri>::iterator trisP = poly->tris.begin();
+    std::vector<ESDL_Point>::iterator pointsP = poly->points.begin();
+
+    for(int i = 0;i<poly->tris.size();i++)
     {
-        ESDL_DrawTriF(win,ESDL_Tri(poly.points.at(poly.tris.at(i).p0)+ESDL_Point(x,y),poly.points.at(poly.tris.at(i).p1)+ESDL_Point(x,y),poly.points.at(poly.tris.at(i).p2)+ESDL_Point(x,y)),color);
+        ESDL_DrawTriF(win,ESDL_Tri(*(pointsP+((trisP+i)->p0)),*(pointsP+((trisP+i)->p1)),*(pointsP+((trisP+i)->p2))),x,y,color);
     }
+    return 0;
+}
+
+int ESDL_DrawPoly(ESDL_Window* win,ESDL_Poly poly,int x,int y,ESDL_Color color)
+{
+    SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
+    for(int i=0;i<poly.points.size()-1;i++)
+    {
+        SDL_RenderDrawLine(win->rend,x+poly.points.at(i).x,y+poly.points.at(i).y,x+poly.points.at(i+1).x,y+poly.points.at(i+1).y);
+    }
+    SDL_RenderDrawLine(win->rend,x+poly.points.at(0).x,y+poly.points.at(0).y,x+poly.points.back().x,y+poly.points.back().y);
     return 0;
 }
 
@@ -226,9 +356,13 @@ int ESDL_Poly::SplitPoly()
     {
         indexes.push_back(i);
     }
+
     Uint8 indexes_size = indexes.size();
     Uint8 index = 0;
     Sint8 index_a,index_b;
+
+    std::vector<ESDL_Point>::iterator pointsP;
+    pointsP = points.begin();
 
     while(indexes_size > 3)
     {
@@ -240,16 +374,16 @@ int ESDL_Poly::SplitPoly()
         if(index_b < 0)
             index_b = indexes.size()-1;
 
-        if(IsSmallDeg(points.at(indexes.at(index)),points.at(indexes.at(index_a)),points.at(indexes.at(index_b))))
+        if(IsSmallDeg(*(pointsP+indexes.at(index)),*(pointsP+indexes.at(index_a)),*(pointsP+indexes.at(index_b))))
         {
             for(int i = 0;i<indexes_size;i++)
-                if(InsideTriangle(points.at(indexes.at(index)),points.at(indexes.at(index_a)),points.at(indexes.at(index_b)),points.at(indexes.at(i))))
+                if(InsideTriangle(*(pointsP+indexes.at(index)),*(pointsP+indexes.at(index_a)),*(pointsP+indexes.at(index_b)),*(pointsP+indexes.at(i))))
                 {
                     break;
                 }
-                else if(i==indexes_size-1)
+                else if(i == indexes_size-1)
                 {
-                    tris.push_back(ESDL_PTri(indexes.at(index_b),indexes.at(index),indexes.at(index_a)));
+                    tris.push_back(ESDL_Index_Tri(indexes.at(index_b),indexes.at(index),indexes.at(index_a)));
                     indexes.erase(indexes.begin()+index);
                     index = -1;
                     indexes_size--;
@@ -257,9 +391,14 @@ int ESDL_Poly::SplitPoly()
                 }
         }
         index++;
+        if(index == indexes_size)
+        {
+            fmt::print("coudnt find a tri!");
+            return 1;
+        }
     }
 
-    tris.push_back(ESDL_PTri(indexes.at(2),indexes.at(0),indexes.at(1)));
+    tris.push_back(ESDL_Index_Tri(indexes.at(2),indexes.at(0),indexes.at(1)));
 
     return 0;
 }
@@ -295,6 +434,55 @@ bool ESDL_Poly::IsSmallDeg(ESDL_Point P, ESDL_Point A, ESDL_Point B)
     {
         return true;
     }
+    if(pd == bd & pd == ad)
+    {
+        return true;
+    }
 
     return false;
 }
+
+int ESDL_Poly::ResetTris()
+{
+    SplitPoly();
+    return 0;
+}
+
+int ESDL_Poly::Rotate(float deg)
+{
+    rot += deg;
+    for(int i = 0;i<polar.size();i++)
+    {
+        points.at(i) = ToKartesian(polar.at(i).r,polar.at(i).deg,rot);
+    }
+    return 0;
+}
+
+int ESDL_Poly::FillPolar()
+{
+    ESDL_Polar_Point polarpoint;
+    for(int i = 0;i<points.size();i++)
+    {
+        polarpoint = ToPolar(points.at(i).x,points.at(i).y);
+        polar.push_back(polarpoint);
+    }
+    return 0;
+}
+
+int ESDL_Poly::ResetPolar()
+{
+    polar.clear();
+    FillPolar();
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
