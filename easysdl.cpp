@@ -335,17 +335,12 @@ int ESDL_DrawPolyF(ESDL_Window* win,ESDL_Poly* poly,int x,int y,ESDL_Color color
 
     for(int i = 0;i<poly->tris.size();i++)
     {
-        auto time1 = std::chrono::steady_clock::now();
         // FIX
         if(win->debug)
         ESDL_DrawTriF(win,ESDL_Tri(*(pointsP+((trisP+i)->p0)),*(pointsP+((trisP+i)->p1)),*(pointsP+((trisP+i)->p2))),x,y,poly->tris.at(i).color);
         else
         ESDL_DrawTriF(win,ESDL_Tri(*(pointsP+((trisP+i)->p0)),*(pointsP+((trisP+i)->p1)),*(pointsP+((trisP+i)->p2))),x,y,color);
         // FIX
-        auto time2 = std::chrono::steady_clock::now();
-
-        float delta = std::chrono::duration_cast<std::chrono::microseconds>(time2-time1).count();
-        fmt::print("Tri:{}\n",delta);
     }
     return 0;
 }
