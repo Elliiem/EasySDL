@@ -4,6 +4,7 @@
 #include <fmt/format.h>
 #include <unistd.h>
 #include <iostream>
+#include <chrono>
 
 ESDL_Color red(255,0,0,255);
 ESDL_Color green(0,255,0,255);
@@ -85,9 +86,9 @@ int ESDL_Window::HandleSDLEvents()
 int ESDL_Window::HandleKeys()
 {
     if (keyboard[SDLK_LCTRL] & keyboard[SDLK_z])
-    {
         quit = true;
-    }
+    if(keyboard[SDLK_b] & !last_keyboard[SDLK_b])
+        debug = !debug;
 
     return 0;
 }
@@ -107,6 +108,7 @@ int ESDL_Window::Update()
 
 int Sort_Tri(ESDL_Tri* tri)
 {
+
     if(tri->p0.y <= tri->p1.y)
     {
         if(tri->p1.y > tri->p2.y)
@@ -296,7 +298,9 @@ int ESDL_DrawTriF(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color)
     {
         line_a += delta_a;
         line_b += delta_b;
-        SDL_RenderDrawLine(win->rend,x+tri.p0.x+line_a,y+tri.p0.y+Y,x+tri.p0.x+line_b,y+tri.p0.y+Y);
+
+        SDL_RenderDrawLineF(win->rend,x+tri.p0.x+line_a,y+tri.p0.y+Y,x+tri.p0.x+line_b,y+tri.p0.y+Y);
+
         Y++;
     }
 
@@ -308,7 +312,7 @@ int ESDL_DrawTriF(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color)
     {
         line_a += delta_a;
         line_b += delta_b;
-        SDL_RenderDrawLine(win->rend,x+tri.p0.x+line_a,y+tri.p0.y+Y,x+tri.p0.x+line_b,y+tri.p0.y+Y);
+        SDL_RenderDrawLineF(win->rend,x+tri.p0.x+line_a,y+tri.p0.y+Y,x+tri.p0.x+line_b,y+tri.p0.y+Y);
         Y++;
     }
 
@@ -331,7 +335,17 @@ int ESDL_DrawPolyF(ESDL_Window* win,ESDL_Poly* poly,int x,int y,ESDL_Color color
 
     for(int i = 0;i<poly->tris.size();i++)
     {
+        auto time1 = std::chrono::steady_clock::now();
+        // FIX
+        if(win->debug)
+        ESDL_DrawTriF(win,ESDL_Tri(*(pointsP+((trisP+i)->p0)),*(pointsP+((trisP+i)->p1)),*(pointsP+((trisP+i)->p2))),x,y,poly->tris.at(i).color);
+        else
         ESDL_DrawTriF(win,ESDL_Tri(*(pointsP+((trisP+i)->p0)),*(pointsP+((trisP+i)->p1)),*(pointsP+((trisP+i)->p2))),x,y,color);
+        // FIX
+        auto time2 = std::chrono::steady_clock::now();
+
+        float delta = std::chrono::duration_cast<std::chrono::microseconds>(time2-time1).count();
+        fmt::print("Tri:{}\n",delta);
     }
     return 0;
 }
@@ -360,7 +374,7 @@ int ESDL_Poly::SplitPoly()
     Uint8 indexes_size = indexes.size();
     Uint8 index = 0;
     Sint8 index_a,index_b;
-
+    ESDL_Color randCol;
     std::vector<ESDL_Point>::iterator pointsP;
     pointsP = points.begin();
 

@@ -21,6 +21,10 @@ struct ESDL_Color
         b = B;
         a = A;
     }
+    ESDL_Color()
+    {
+
+    }
 
 };
 
@@ -71,6 +75,7 @@ struct ESDL_Tri
     ESDL_Point p0;
     ESDL_Point p1;
     ESDL_Point p2;
+    ESDL_Color color;
 
     ESDL_Tri(int x0,int y0,int x1,int y1,int x2,int y2)
     {
@@ -84,6 +89,13 @@ struct ESDL_Tri
         p1 = P1;
         p2 = P2;
     }
+    ESDL_Tri(ESDL_Point P0,ESDL_Point P1,ESDL_Point P2,ESDL_Color Color)
+    {
+        p0 = P0;
+        p1 = P1;
+        p2 = P2;
+        color = Color;
+    }
 };
 
 struct ESDL_Index_Tri
@@ -91,12 +103,26 @@ struct ESDL_Index_Tri
     Uint8 p0;
     Uint8 p1;
     Uint8 p2;
+    ESDL_Color color;
 
     ESDL_Index_Tri(Uint8 P0,Uint8 P1,Uint8 P2)
+    {
+        // FIX
+        p0 = P0;
+        p1 = P1;
+        p2 = P2;
+        color.r = rand() % 255;
+        color.g = rand() % 255;
+        color.b = rand() % 255;
+        color.a =  255;
+        // FIX
+    }
+    ESDL_Index_Tri(Uint8 P0,Uint8 P1,Uint8 P2,ESDL_Color Color)
     {
         p0 = P0;
         p1 = P1;
         p2 = P2;
+        color = Color;
     }
 };
 
@@ -150,6 +176,7 @@ class ESDL_Window
         ESDL_Point mouse_pos;
 
         bool quit = false;
+        bool debug = false;
 
         ESDL_Window(int width,int height,std::string name,int SDL_renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC,SDL_BlendMode SDL_blend_flag = SDL_BLENDMODE_BLEND);
 
