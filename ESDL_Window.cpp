@@ -12,6 +12,11 @@ ESDL_Window::ESDL_Window(int width,int height,std::string name,int SDL_renderer_
     time = std::chrono::high_resolution_clock::now();
 
     SDL_SetRenderDrawBlendMode(rend, SDL_blend_flag);
+
+    SDL_GetWindowSize(win,&window_width,&window_height);
+
+    half_window_height = window_height/2;
+    half_window_width = window_width/2;
 }
 
 

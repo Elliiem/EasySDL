@@ -40,9 +40,9 @@ extern ESDL_Color gray;
 //DATA STRUCTS
 struct ESDL_Point
 {
-    int x;
-    int y;
-    ESDL_Point(int X,int Y)
+    float x;
+    float y;
+    ESDL_Point(float X,float Y)
     {
         x = X;
         y = Y;
@@ -203,6 +203,11 @@ class ESDL_Window
         float delta;
         float delta_m;
 
+        int window_height = 0;
+        int window_width = 0;
+        int half_window_height = 0;
+        int half_window_width = 0;
+
         bool quit = false;
         bool debug = false;
 
@@ -225,24 +230,27 @@ int ESDL_DrawRect(ESDL_Window* win,int x0,int y0,int x1,int y1,ESDL_Color color)
 int ESDL_DrawTriF(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color);
 int ESDL_DrawTri(ESDL_Window* win, ESDL_Tri tri, int x, int y, ESDL_Color color);
 int ESDL_DrawPolyF(ESDL_Window* win, ESDL_Poly *poly, int x, int y, ESDL_Color color);
-int ESDL_DrawPoly(ESDL_Window* win,ESDL_Poly poly,int x, int y,ESDL_Color color);
+int ESDL_DrawPoly(ESDL_Window* win,ESDL_Poly* poly,int x, int y,ESDL_Color color);
 
 
-//CAMERA (Camera)
 class ESDL_Camera
 {
     public:
-        float x;
-        float y;
+        int x;
+        int y;
+        ESDL_Window *win;
+        ESDL_Camera(int X,int Y, ESDL_Window* Win)
+        {
+            x = X;
+            y = Y;
+            win = Win;
+        }
 
-        int Update(int X,int Y);
-        ESDL_Point GetRelative();
-
-    private:
-
-
+        ESDL_Point ToCamCords(int X, int Y)
+        {
+            return ESDL_Point(X-x+win->half_window_width,Y-y+win->half_window_height);
+        }
 };
-
 
 
 

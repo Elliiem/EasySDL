@@ -89,6 +89,10 @@ int ESDL_DrawTriF(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color)
     float delta_a,delta_b;
     float line_a = 0;
     float line_b = 0;
+
+    int p0_x = x+tri.p0.x;
+    int p0_y = y+tri.p0.y;
+
     int Y = 0;
 
     delta_a = (float)(tri.p1.x-tri.p0.x)/(float)(tri.p1.y-tri.p0.y);
@@ -99,7 +103,7 @@ int ESDL_DrawTriF(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color)
         line_a += delta_a;
         line_b += delta_b;
 
-        SDL_RenderDrawLineF(win->rend,x+tri.p0.x+line_a,y+tri.p0.y+Y,x+tri.p0.x+line_b,y+tri.p0.y+Y);
+        SDL_RenderDrawLineF(win->rend,p0_x+line_a,p0_y+Y,p0_x+line_b,p0_y+Y);
 
         Y++;
     }
@@ -108,11 +112,13 @@ int ESDL_DrawTriF(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color)
 
     line_a = tri.p1.x - tri.p0.x;
 
-    while (Y != tri.p2.y-tri.p0.y)
+    while(Y != tri.p2.y-tri.p0.y)
     {
         line_a += delta_a;
         line_b += delta_b;
-        SDL_RenderDrawLineF(win->rend,x+tri.p0.x+line_a,y+tri.p0.y+Y,x+tri.p0.x+line_b,y+tri.p0.y+Y);
+
+        SDL_RenderDrawLineF(win->rend,p0_x+line_a,p0_y+Y,p0_x+line_b,p0_y+Y);
+
         Y++;
     }
 
@@ -145,13 +151,13 @@ int ESDL_DrawPolyF(ESDL_Window* win,ESDL_Poly* poly,int x,int y,ESDL_Color color
     return 0;
 }
 
-int ESDL_DrawPoly(ESDL_Window* win,ESDL_Poly poly,int x,int y,ESDL_Color color)
+int ESDL_DrawPoly(ESDL_Window* win,ESDL_Poly* poly,int x,int y,ESDL_Color color)
 {
     SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
-    for(int i=0;i<poly.points.size()-1;i++)
+    for(int i=0;i<poly->points.size()-1;i++)
     {
-        SDL_RenderDrawLine(win->rend,x+poly.points.at(i).x,y+poly.points.at(i).y,x+poly.points.at(i+1).x,y+poly.points.at(i+1).y);
+        SDL_RenderDrawLine(win->rend,x+poly->points.at(i).x,y+poly->points.at(i).y,x+poly->points.at(i+1).x,y+poly->points.at(i+1).y);
     }
-    SDL_RenderDrawLine(win->rend,x+poly.points.at(0).x,y+poly.points.at(0).y,x+poly.points.back().x,y+poly.points.back().y);
+    SDL_RenderDrawLine(win->rend,x+poly->points.at(0).x,y+poly->points.at(0).y,x+poly->points.back().x,y+poly->points.back().y);
     return 0;
 }
