@@ -108,9 +108,13 @@ int ESDL_Poly::SplitPoly()
 
     Uint8 indexes_size = indexes.size();
     Uint8 index = 0;
+
     Sint8 index_a,index_b;
+
     ESDL_Color randCol;
+
     std::vector<ESDL_Point>::iterator pointsP;
+
     pointsP = points.begin();
 
     while(indexes_size > 3)
@@ -142,7 +146,7 @@ int ESDL_Poly::SplitPoly()
         index++;
         if(index == indexes_size)
         {
-            fmt::print("coudnt find a tri!");
+            std::cerr << "ESLD ERROR: coudnt find a tri!" << std::endl;
             return 1;
         }
     }
@@ -230,6 +234,13 @@ int ESDL_Poly::ResetPolar()
 {
     polar.clear();
     FillPolar();
+    return 0;
+}
+
+int ESDL_Poly::Reset()
+{
+    ResetPolar();
+    ResetTris();
     return 0;
 }
 

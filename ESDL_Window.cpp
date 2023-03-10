@@ -95,6 +95,7 @@ int ESDL_Window::Update()
     SDL_RenderPresent(rend);
     SDL_SetRenderDrawColor(rend,0,0,0,255);
     SDL_RenderClear(rend);
+
     delta_m = GetDeltaTime();
     delta = delta_m/1000;
 

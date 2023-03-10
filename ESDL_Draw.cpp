@@ -84,26 +84,25 @@ int ESDL_DrawRect(ESDL_Window* win,int x0,int y0,int x1,int y1,ESDL_Color color)
 int ESDL_DrawTriF(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color)
 {
     Sort_Tri(&tri);
+
     SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
 
     float delta_a,delta_b;
     float line_a = 0;
     float line_b = 0;
 
-    int p0_x = x+tri.p0.x;
-    int p0_y = y+tri.p0.y;
-
-    int Y = 0;
+    int X = x+tri.p0.x;
+    int Y = y+tri.p0.y;
 
     delta_a = (float)(tri.p1.x-tri.p0.x)/(float)(tri.p1.y-tri.p0.y);
     delta_b = (float)(tri.p2.x-tri.p0.x)/(float)(tri.p2.y-tri.p0.y);
 
-    while(Y != tri.p1.y-tri.p0.y)
+    while(Y != y+tri.p1.y)
     {
         line_a += delta_a;
         line_b += delta_b;
-
-        SDL_RenderDrawLineF(win->rend,p0_x+line_a,p0_y+Y,p0_x+line_b,p0_y+Y);
+        // I prolly should draw lines like this but I cant find a better way
+        SDL_RenderDrawLine(win->rend,X+line_a,Y,X+line_b,Y);
 
         Y++;
     }
@@ -112,12 +111,57 @@ int ESDL_DrawTriF(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color)
 
     line_a = tri.p1.x - tri.p0.x;
 
-    while(Y != tri.p2.y-tri.p0.y)
+    while(Y != y+tri.p2.y)
     {
         line_a += delta_a;
         line_b += delta_b;
 
-        SDL_RenderDrawLineF(win->rend,p0_x+line_a,p0_y+Y,p0_x+line_b,p0_y+Y);
+        SDL_RenderDrawLine(win->rend,X+line_a,Y,X+line_b,Y);
+
+        Y++;
+    }
+
+    return 0;
+}
+
+int ESDL_DrawTriF(ESDL_Window* win,ESDL_Tri tri,ESDL_Point pos,ESDL_Color color)
+{
+    int x = pos.x;
+    int y = pos.y;
+
+    Sort_Tri(&tri);
+    SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
+
+    float delta_a,delta_b;
+    float line_a = 0;
+    float line_b = 0;
+
+    int X = x+tri.p0.x;
+    int Y = y+tri.p0.y;
+
+    delta_a = (float)(tri.p1.x-tri.p0.x)/(float)(tri.p1.y-tri.p0.y);
+    delta_b = (float)(tri.p2.x-tri.p0.x)/(float)(tri.p2.y-tri.p0.y);
+
+    while(Y != y+tri.p1.y)
+    {
+        line_a += delta_a;
+        line_b += delta_b;
+        // I prolly should draw lines like this but I cant find a better way
+        SDL_RenderDrawLine(win->rend,X+line_a,Y,X+line_b,Y);
+
+        Y++;
+    }
+
+    delta_a = (float)(tri.p2.x-tri.p1.x)/(float)(tri.p2.y-tri.p1.y);
+
+    line_a = tri.p1.x - tri.p0.x;
+
+    while(Y != y+tri.p2.y)
+    {
+        line_a += delta_a;
+        line_b += delta_b;
+
+        SDL_RenderDrawLine(win->rend,X+line_a,Y,X+line_b,Y);
 
         Y++;
     }
@@ -127,6 +171,17 @@ int ESDL_DrawTriF(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color)
 
 int ESDL_DrawTri(ESDL_Window* win,ESDL_Tri tri,int x,int y,ESDL_Color color)
 {
+    SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
+    SDL_RenderDrawLine(win->rend,x+tri.p0.x,y+tri.p0.y,x+tri.p1.x,y+tri.p1.y);
+    SDL_RenderDrawLine(win->rend,x+tri.p1.x,y+tri.p1.y,x+tri.p2.x,y+tri.p2.y);
+    SDL_RenderDrawLine(win->rend,x+tri.p2.x,y+tri.p2.y,x+tri.p0.x,y+tri.p0.y);
+    return 0;
+}
+
+int ESDL_DrawTri(ESDL_Window* win,ESDL_Tri tri,ESDL_Point pos,ESDL_Color color)
+{
+    int x = pos.x;
+    int y = pos.y;
     SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
     SDL_RenderDrawLine(win->rend,x+tri.p0.x,y+tri.p0.y,x+tri.p1.x,y+tri.p1.y);
     SDL_RenderDrawLine(win->rend,x+tri.p1.x,y+tri.p1.y,x+tri.p2.x,y+tri.p2.y);
@@ -151,8 +206,38 @@ int ESDL_DrawPolyF(ESDL_Window* win,ESDL_Poly* poly,int x,int y,ESDL_Color color
     return 0;
 }
 
+int ESDL_DrawPolyF(ESDL_Window* win,ESDL_Poly* poly,ESDL_Point pos,ESDL_Color color)
+{
+    std::vector<ESDL_Index_Tri>::iterator trisP = poly->tris.begin();
+    std::vector<ESDL_Point>::iterator pointsP = poly->points.begin();
+
+    for(int i = 0;i<poly->tris.size();i++)
+    {
+        // FIX
+        if(win->debug)
+        ESDL_DrawTriF(win,ESDL_Tri(*(pointsP+((trisP+i)->p0)),*(pointsP+((trisP+i)->p1)),*(pointsP+((trisP+i)->p2))),pos.x,pos.y,poly->tris.at(i).color);
+        else
+        ESDL_DrawTriF(win,ESDL_Tri(*(pointsP+((trisP+i)->p0)),*(pointsP+((trisP+i)->p1)),*(pointsP+((trisP+i)->p2))),pos.x,pos.y,color);
+        // FIX
+    }
+    return 0;
+}
+
 int ESDL_DrawPoly(ESDL_Window* win,ESDL_Poly* poly,int x,int y,ESDL_Color color)
 {
+    SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
+    for(int i=0;i<poly->points.size()-1;i++)
+    {
+        SDL_RenderDrawLine(win->rend,x+poly->points.at(i).x,y+poly->points.at(i).y,x+poly->points.at(i+1).x,y+poly->points.at(i+1).y);
+    }
+    SDL_RenderDrawLine(win->rend,x+poly->points.at(0).x,y+poly->points.at(0).y,x+poly->points.back().x,y+poly->points.back().y);
+    return 0;
+}
+
+int ESDL_DrawPoly(ESDL_Window* win,ESDL_Poly* poly,ESDL_Point pos,ESDL_Color color)
+{
+    int x = pos.x;
+    int y = pos.y;
     SDL_SetRenderDrawColor(win->rend,color.r,color.g,color.b,color.a);
     for(int i=0;i<poly->points.size()-1;i++)
     {
